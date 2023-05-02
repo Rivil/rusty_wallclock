@@ -1,8 +1,10 @@
 use yew::prelude::*;
 
+
 pub struct AsyncComponent {
     clock: Option<AttrValue>,
 }
+mod components;
 
 pub enum Msg {
     UpdateClock(AttrValue),
@@ -24,7 +26,7 @@ fn App() -> Html {
         <div>
             <button onclick={onclick}>{ "Increment" }</button>
             <p>{ *counter }</p>
-        <clock::Clock />
+        <clock/>
         </div>
     }
 }
