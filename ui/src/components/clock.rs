@@ -1,9 +1,10 @@
-use chrono::{DateTime, Duration, Local};
-use futures::stream::Stream;
+use chrono::{DateTime, Local};
+use futures::stream::{Stream, StreamExt};
+use std::time::Duration;
 use yew::platform::time::interval;
 use yew::{html, AttrValue, Component, Context, Html};
 
-enum Msg {
+pub enum Msg {
     ClockTicked(DateTime<Local>),
 }
 
@@ -18,22 +19,23 @@ pub fn stream_time() -> impl Stream<Item = DateTime<Local>> {
 impl Component for ClockComponent {
     type Message = Msg;
     type Properties = ();
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
+        ctx.link().send_stream(stream_time().map(Msg::ClockTicked));
         Self { clock: None }
     }
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::ClockTicked(time) => {
-                self.clock = Some(time.format("%H:%M:%S").to_string());
-                ctx.redraw();
+                self.clock = Some(AttrValue::from(time.to_rfc2822()));
             }
         }
-        false
+        true
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
+        let display = self.clock.as_deref().unwrap_or("Loading...");
         html! {
             <div>
-                <h1>{ self.clock.clone().unwrap_or_default() }</h1>
+                <h1>{ display }</h1>
             </div>
         }
     }
