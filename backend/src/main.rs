@@ -3,6 +3,7 @@ use rocket::response::status::NotFound;
 use std::path::PathBuf;
 
 mod api;
+mod settings;
 
 #[macro_use]
 extern crate rocket;
@@ -27,7 +28,7 @@ async fn index() -> Result<NamedFile, NotFound<String>> {
     get_index().await
 }
 
-#[get("/<path..>")]
+#[get("/data/<path..>")]
 async fn data(path: PathBuf) -> Result<NamedFile, NotFound<String>> {
     let path = PathBuf::from("../data/").join(path);
     match NamedFile::open(path).await {
@@ -39,7 +40,6 @@ async fn data(path: PathBuf) -> Result<NamedFile, NotFound<String>> {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![index, static_files])
-        .mount("/data", routes![data])
-        .mount("/api", api::weather::routes())
+        .mount("/", routes![index, static_files, data])
+        .mount("/api/weather", api::weather::routes())
 }
